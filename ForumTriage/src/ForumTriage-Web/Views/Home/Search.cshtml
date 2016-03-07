@@ -1,0 +1,11 @@
+﻿@model ForumTriage_Web.ViewModels.Home.SearchViewModel
+
+<form >
+    @foreach (var tag in Model.Tags)
+    {
+        <input type="checkbox" name="tags" value="@tag">@tag
+    }
+   <input type="submit" value="Submit" />
+</form>
+
+

@@ -8,55 +8,70 @@ using System.Net.Http.Headers;
 using System.IO;
 using System.IO.Compression;
 using System.Text;
+using ForumTriage_Web.ViewModels.Home;
 
 namespace ForumTriage_Web.Controllers
 {
     public class HomeController : Controller
     {
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
+        {
+
+
+
+
+            return View();
+        }
+
+        //
+        // GET: /Home/Search
+        [HttpGet]
+        public IActionResult Search()
         {
             //read data files
             var owners = System.IO.File.ReadAllLines(@"..\data\Owners.txt");
             var tags = System.IO.File.ReadAllLines(@"..\data\Tags.txt");
 
+            //construct view model
+            var viewModel = new SearchViewModel()
+            {
+                Owners = owners.ToList<string>(),
+                Tags = tags.ToList<string>()
+            };
+
+            return View(viewModel);
+        }
+
+        //
+        // POST: /Home/Search
+        [HttpPost]
+        public async Task<IActionResult> Search(string place)
+        {
+            var tags = new List<string>();
             //call SO api
             using (var httpClient = new HttpClient())
             {
                 var apiUrl = (string.Format("http://api.stackexchange.com/2.2/search/advanced?order=desc&sort=activity&accepted=False&tagged={0}&site=stackoverflow", tags[0]));
-                
+
                 //setup HttpClient
                 httpClient.BaseAddress = new Uri(apiUrl);
                 httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
                 //make request
-                //var response = await httpClient.GetAsync(apiUrl);
-
-                //var response = await httpClient.GetByteArrayAsync(apiUrl);
-                //var str = System.Text.Encoding.UTF8.GetString(response);
-
-                //using (var response = await httpClient.GetStreamAsync(apiUrl))
-                //{
-                //    string contents = response.ReadToEnd();
-                //}
                 var response = string.Empty;
-                using (var stream = await httpClient.GetStreamAsync(apiUrl))
+                using (var responseStream = await httpClient.GetStreamAsync(apiUrl))
                 {
                     MemoryStream output = new MemoryStream();
-                    using (GZipStream g = new GZipStream(stream, CompressionMode.Decompress))
+                    using (GZipStream gzipStream = new GZipStream(responseStream, CompressionMode.Decompress))
                     {
-                        g.CopyTo(output);
+                        gzipStream.CopyTo(output);
                     }
                     response = Encoding.UTF8.GetString(output.ToArray());
                 }
 
-                //read response and write to view
-
-                //var responseContent = await response.Content.ReadAsStreamAsync();
-                //ViewData["Result"] = responseContent;
+                //write to view
+                ViewData["Result"] = response;
             }
-
-
-
             return View();
         }
 
