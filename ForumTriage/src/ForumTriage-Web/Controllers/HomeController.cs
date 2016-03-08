@@ -9,16 +9,14 @@ using System.IO;
 using System.IO.Compression;
 using System.Text;
 using ForumTriage_Web.ViewModels.Home;
+using System.Net;
 
 namespace ForumTriage_Web.Controllers
 {
     public class HomeController : Controller
     {
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-
-
-
 
             return View();
         }
@@ -48,8 +46,11 @@ namespace ForumTriage_Web.Controllers
         public async Task<IActionResult> Search(string place)
         {
             var tags = new List<string>();
+
             //call SO api
-            using (var httpClient = new HttpClient())
+            HttpClientHandler handler = new HttpClientHandler();
+            handler.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+            using (var httpClient = new HttpClient(handler))
             {
                 var apiUrl = (string.Format("http://api.stackexchange.com/2.2/search/advanced?order=desc&sort=activity&accepted=False&tagged={0}&site=stackoverflow", tags[0]));
 
@@ -58,20 +59,36 @@ namespace ForumTriage_Web.Controllers
                 httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
                 //make request
-                var response = string.Empty;
-                using (var responseStream = await httpClient.GetStreamAsync(apiUrl))
-                {
-                    MemoryStream output = new MemoryStream();
-                    using (GZipStream gzipStream = new GZipStream(responseStream, CompressionMode.Decompress))
-                    {
-                        gzipStream.CopyTo(output);
-                    }
-                    response = Encoding.UTF8.GetString(output.ToArray());
-                }
+                var response = await httpClient.GetStringAsync(apiUrl);
 
                 //write to view
                 ViewData["Result"] = response;
             }
+
+
+            //using (var httpClient = new HttpClient())
+            //{
+            //    var apiUrl = (string.Format("http://api.stackexchange.com/2.2/search/advanced?order=desc&sort=activity&accepted=False&tagged={0}&site=stackoverflow", tags[0]));
+
+            //    //setup HttpClient
+            //    httpClient.BaseAddress = new Uri(apiUrl);
+            //    httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+            //    //make request
+            //    var response = string.Empty;
+            //    using (var responseStream = await httpClient.GetStreamAsync(apiUrl))
+            //    {
+            //        MemoryStream output = new MemoryStream();
+            //        using (GZipStream gzipStream = new GZipStream(responseStream, CompressionMode.Decompress))
+            //        {
+            //            gzipStream.CopyTo(output);
+            //        }
+            //        response = Encoding.UTF8.GetString(output.ToArray());
+            //    }
+
+            //    //write to view
+            //    ViewData["Result"] = response;
+            //}
             return View();
         }
 
