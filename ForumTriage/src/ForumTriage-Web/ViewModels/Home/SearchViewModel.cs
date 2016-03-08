@@ -7,7 +7,7 @@ namespace ForumTriage_Web.ViewModels.Home
 {
     public class SearchViewModel
     {
-        public List<string> Owners { get; set; }
-        public List<string> Tags { get; set; }
+        public IEnumerable<string> Owners { get; set; }
+        public IEnumerable<string> Tags { get; set; }
     }
 }
