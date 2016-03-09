@@ -5,9 +5,8 @@ using System.Threading.Tasks;
 
 namespace ForumTriage_Web.ViewModels.Home
 {
-    public class QuestionsSearchViewModel
+    public class QuestionsSearchPostViewModel
     {
-        public IEnumerable<string> Users { get; set; }
-        public IEnumerable<string> Tags { get; set; }
+        public IEnumerable<String> UserIds { get; set; }
     }
 }

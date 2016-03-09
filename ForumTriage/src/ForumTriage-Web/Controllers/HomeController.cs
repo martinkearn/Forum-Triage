@@ -31,15 +31,32 @@ namespace ForumTriage_Web.Controllers
         // GET: /Home/QuestionsSearch
         public IActionResult QuestionsSearch()
         {
-            //read data files
-            var users = System.IO.File.ReadAllLines(@"..\data\Users.txt");
-            var tags = System.IO.File.ReadAllLines(@"..\data\Tags.txt");
+            //read data files into an array of users
+            List<User> users = new List<User>();
+
+            using (StreamReader reader = System.IO.File.OpenText(@"..\data\Users.json"))
+            {
+                JObject o = (JObject)JToken.ReadFrom(new JsonTextReader(reader));
+
+                JArray usersArray = (JArray)o["users"];
+
+                foreach (var u in usersArray)
+                {
+                    var user = new User()
+                    {
+                        Name = (string)u["Name"],
+                        StackOverflowUserId = (string)u["StackOverflowUserId"],
+                        Organisation = (string)u["Organisation"]
+                    };
+
+                    users.Add(user);
+                }
+            }
 
             //construct view model
-            var viewModel = new QuestionsSearchViewModel()
+            var viewModel = new QuestionsSearchGetViewModel()
             {
-                Users = users,
-                Tags = tags
+                Users = users
             };
 
             return View(viewModel);
@@ -48,32 +65,22 @@ namespace ForumTriage_Web.Controllers
         //
         // POST: /Home/Questions
         [HttpPost]
-        public async Task<IActionResult> Questions(QuestionsSearchViewModel search)
+        public async Task<IActionResult> Questions(QuestionsSearchPostViewModel search)
         {
             //prepare query strings for api call
-            var tagsForQuery = string.Empty;
-            if (search.Tags != null)
+            var userIdsForQuery = string.Empty;
+            if (search.UserIds != null)
             {
-                foreach (var tag in search.Tags)
+                foreach (var userId in search.UserIds)
                 {
-                    tagsForQuery += tag + ";";
+                    userIdsForQuery += userId + ";";
                 }
-                tagsForQuery = tagsForQuery.TrimEnd(';');
-            }
-
-            var usersForQuery = string.Empty;
-            if (search.Users != null)
-            {
-                foreach (var owner in search.Users)
-                {
-                    usersForQuery += owner + ";";
-                }
-                usersForQuery = usersForQuery.TrimEnd(';');
+                userIdsForQuery = userIdsForQuery.TrimEnd(';');
             }
 
             //construct api url
             var apiUrl = (string.Format("users/{0}/questions/unanswered?pagesize={1}&order=desc&sort=activity&site=stackoverflow",
-                usersForQuery,
+                userIdsForQuery,
                 Constants.Constants.StackOverflowApiPageSize));
 
             //get results

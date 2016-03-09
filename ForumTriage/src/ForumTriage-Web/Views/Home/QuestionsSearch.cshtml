@@ -1,21 +1,12 @@
-﻿@model ForumTriage_Web.ViewModels.Home.QuestionsSearchViewModel
+﻿@model ForumTriage_Web.ViewModels.Home.QuestionsSearchGetViewModel
 <h2>Search for Questions</h2>
 <form action="/Home/Questions" method="post" autocomplete="on">
     <div class="form-group">
-        <p>Tags</p>
-        @foreach (var tag in Model.Tags)
-        {
-            <label class="checkbox-inline" style="min-width: 300px;">
-                <input type="checkbox" name="Tags" id="@tag" value="@tag"> @tag
-            </label>
-        }
-    </div>
-    <div class="form-group">
-        <p>Users</p>
+        <p>Questions from which users?</p>
         @foreach (var user in Model.Users)
         {
-            <label class="checkbox-inline" style="min-width: 300px;">
-                <input type="checkbox" name="Users" id="@user" value="@user"> @user
+            <label class="checkbox-inline">
+                <input type="checkbox" name="UserIds" id="@user.StackOverflowUserId" value="@user.StackOverflowUserId"> @user.Name
             </label>
         }
     </div>

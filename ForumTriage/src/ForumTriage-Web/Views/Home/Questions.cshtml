@@ -7,11 +7,11 @@
 {
     <div class="panel panel-default">
         <div class="panel-heading"><h4><a href="@question.link">@question.title</a></h4></div>
-
         <ul class="list-group">
             <li class="list-group-item">Tags: @{foreach (var tag in question.tags) { <a href="http://stackoverflow.com/questions/tagged/@tag">@tag</a> } }</li>
             <li class="list-group-item">Owner: <a href="@question.owner.link">@question.owner.display_name (@question.owner.user_id)</a></li>
-            <li class="list-group-item">Is Answered: @question.is_answered</li>
+            <li class="list-group-item">Answer Accepted:@question.is_answered, Total Answers:@question.answer_count</li>
+            <li class="list-group-item">Upvotes:@question.up_vote_count, Downvotes:@question.down_vote_count, Favourited:@question.favorite_count</li>
             <li class="list-group-item">View Count: @question.view_count</li>
             <li class="list-group-item">Creation Date: @question.creation_date (This is an epoch date, convert it <a href="http://www.epochconverter.com/">here</a>)</li>
         </ul>
