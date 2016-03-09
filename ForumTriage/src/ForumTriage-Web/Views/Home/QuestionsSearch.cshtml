@@ -1,6 +1,6 @@
-﻿@model ForumTriage_Web.ViewModels.Home.SearchViewModel
-
-<form action="/Home/Search" method="post" autocomplete="on">
+﻿@model ForumTriage_Web.ViewModels.Home.QuestionsSearchViewModel
+<h2>Search for Questions</h2>
+<form action="/Home/Questions" method="post" autocomplete="on">
     <div class="form-group">
         <p>Tags</p>
         @foreach (var tag in Model.Tags)
@@ -11,11 +11,11 @@
         }
     </div>
     <div class="form-group">
-        <p>Owners</p>
-        @foreach (var owner in Model.Owners)
+        <p>Users</p>
+        @foreach (var user in Model.Users)
         {
             <label class="checkbox-inline" style="min-width: 300px;">
-                <input type="checkbox" name="Owners" id="@owner" value="@owner"> @owner
+                <input type="checkbox" name="Users" id="@user" value="@user"> @user
             </label>
         }
     </div>

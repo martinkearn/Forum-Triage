@@ -1,0 +1,22 @@
+﻿@model ForumTriage_Web.ViewModels.Home.QuestionsViewModel
+
+<h2>Questions</h2>
+<p>Showing only the top 100 results.</p>
+
+@foreach (var question in Model.Questions)
+{
+    <div class="panel panel-default">
+        <div class="panel-heading"><h4><a href="@question.link">@question.title</a></h4></div>
+
+        <ul class="list-group">
+            <li class="list-group-item">Tags: @{foreach (var tag in question.tags) { <a href="http://stackoverflow.com/questions/tagged/@tag">@tag</a> } }</li>
+            <li class="list-group-item">Owner: <a href="@question.owner.link">@question.owner.display_name (@question.owner.user_id)</a></li>
+            <li class="list-group-item">Is Answered: @question.is_answered</li>
+            <li class="list-group-item">View Count: @question.view_count</li>
+            <li class="list-group-item">Creation Date: @question.creation_date (This is an epoch date, convert it <a href="http://www.epochconverter.com/">here</a>)</li>
+        </ul>
+
+    </div>
+}
+
+

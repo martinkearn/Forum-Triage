@@ -15,6 +15,7 @@ using Newtonsoft.Json.Linq;
 using ForumTriage_Web.Models;
 using Newtonsoft.Json;
 using ForumTriage_Web.Constants;
+using ForumTriage_Web.Services;
 
 namespace ForumTriage_Web.Controllers
 {
@@ -27,18 +28,17 @@ namespace ForumTriage_Web.Controllers
         }
 
         //
-        // GET: /Home/Search
-        [HttpGet]
-        public IActionResult Search()
+        // GET: /Home/QuestionsSearch
+        public IActionResult QuestionsSearch()
         {
             //read data files
-            var owners = System.IO.File.ReadAllLines(@"..\data\Owners.txt");
+            var users = System.IO.File.ReadAllLines(@"..\data\Users.txt");
             var tags = System.IO.File.ReadAllLines(@"..\data\Tags.txt");
 
             //construct view model
-            var viewModel = new SearchViewModel()
+            var viewModel = new QuestionsSearchViewModel()
             {
-                Owners = owners,
+                Users = users,
                 Tags = tags
             };
 
@@ -46,67 +46,57 @@ namespace ForumTriage_Web.Controllers
         }
 
         //
-        // POST: /Home/Search
+        // POST: /Home/Questions
         [HttpPost]
-        public async Task<IActionResult> Search(SearchViewModel vm)
+        public async Task<IActionResult> Questions(QuestionsSearchViewModel search)
         {
             //prepare query strings for api call
             var tagsForQuery = string.Empty;
-            foreach (var tag in vm.Tags)
+            if (search.Tags != null)
             {
-                tagsForQuery += tag + ";";
-            }
-            tagsForQuery.TrimEnd(';');
-
-            //TO DO need to get list of user IDs from the SO api here. This way we can add these to the search request using advanced search or store ids in the data file and add a tool in this app to resolve display names to ids
-            var ownersForQuery = string.Empty;
-            foreach (var owner in vm.Owners)
-            {
-                ownersForQuery += owner + ";";
-            }
-            ownersForQuery.TrimEnd(';');
-
-            //call SO api
-            HttpClientHandler handler = new HttpClientHandler();
-            handler.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
-            using (var httpClient = new HttpClient(handler))
-            {
-                //The advanced search api allow querying on both tags and user, but the user is an ID not display name: http://api.stackexchange.com/docs/advanced-search
-                var apiUrl = (string.Format("http://api.stackexchange.com/2.2/search/advanced?pagesize={0}&order=desc&sort=activity&accepted=False&tagged={1}&site=stackoverflow", Constants.Constants._StackOverflowApiPageSize, tagsForQuery));
-
-                //setup HttpClient
-                httpClient.BaseAddress = new Uri(apiUrl);
-                httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-                //make request
-                var responseString = await httpClient.GetStringAsync(apiUrl);
-
-                //parse json string to object
-                List<StackOverflowQuestion> filteredQuestions = new List<StackOverflowQuestion>();
-                JObject response = JObject.Parse(responseString);
-                IList<JToken> results = response["items"].Children().ToList();
-                foreach (var result in results)
+                foreach (var tag in search.Tags)
                 {
-                    StackOverflowQuestion question = JsonConvert.DeserializeObject<StackOverflowQuestion>(result.ToString());
-                    //filter by owner
-                    if (vm.Owners.Contains(question.owner.display_name))
-                    {
-                        filteredQuestions.Add(question);
-                    }
+                    tagsForQuery += tag + ";";
                 }
-
-                //filter to select owners
-
-
-
-                //write to view
-                ViewData["Result"] = "fibble";
+                tagsForQuery = tagsForQuery.TrimEnd(';');
             }
 
-            return View();
+            var usersForQuery = string.Empty;
+            if (search.Users != null)
+            {
+                foreach (var owner in search.Users)
+                {
+                    usersForQuery += owner + ";";
+                }
+                usersForQuery = usersForQuery.TrimEnd(';');
+            }
+
+            //construct api url
+            var apiUrl = (string.Format("users/{0}/questions/unanswered?pagesize={1}&order=desc&sort=activity&site=stackoverflow",
+                usersForQuery,
+                Constants.Constants.StackOverflowApiPageSize));
+
+            //get results
+            var results = await StackOverflowAPIService.CallApi(apiUrl);
+
+            //parse json string to object
+            List<StackOverflowQuestion> questions = new List<StackOverflowQuestion>();
+            foreach (var result in results)
+            {
+                StackOverflowQuestion question = JsonConvert.DeserializeObject<StackOverflowQuestion>(result.ToString());
+                questions.Add(question);
+            }
+
+            //populate view model
+            var vm = new QuestionsViewModel()
+            {
+                Questions = questions
+            };
+
+            return View(vm);
         }
 
-        public IActionResult SearchUsers()
+        public IActionResult UsersSearch()
         {
             return View();
         }
@@ -114,36 +104,27 @@ namespace ForumTriage_Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Users(UsersSearchViewModel search)
         {
-            //setup view model
-            var vm = new UsersViewModel();
+            //construct api url
+            var apiUrl = (string.Format("users?pagesize={0}&order=desc&sort=reputation&inname={1}&site=stackoverflow", 
+                Constants.Constants.StackOverflowApiPageSize, 
+                search.InName));
 
-            //call SO api
-            HttpClientHandler handler = new HttpClientHandler();
-            handler.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
-            using (var httpClient = new HttpClient(handler))
+            //get results
+            var results = await StackOverflowAPIService.CallApi(apiUrl);
+
+            //parse json string to object
+            List<StackOverflowUser> users = new List<StackOverflowUser>();
+            foreach (var result in results)
             {
-                var apiUrl = (string.Format("http://api.stackexchange.com/2.2/users?pagesize={0}&order=desc&sort=reputation&inname={1}&site=stackoverflow", Constants.Constants._StackOverflowApiPageSize, search.InName));
-
-                //setup HttpClient
-                httpClient.BaseAddress = new Uri(apiUrl);
-                httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-                //make request
-                var responseString = await httpClient.GetStringAsync(apiUrl);
-
-                //parse json string to object
-                List<StackOverflowUser> users = new List<StackOverflowUser>();
-                JObject response = JObject.Parse(responseString);
-                IList<JToken> results = response["items"].Children().ToList();
-                foreach (var result in results)
-                {
-                    StackOverflowUser user = JsonConvert.DeserializeObject<StackOverflowUser>(result.ToString());
-                    users.Add(user);
-                }
-
-                //populate view model
-                vm.Users = users;
+                StackOverflowUser user = JsonConvert.DeserializeObject<StackOverflowUser>(result.ToString());
+                users.Add(user);
             }
+
+            //populate view model
+            var vm = new UsersViewModel()
+            {
+                Users = users
+            };
 
             return View(vm);
         }
