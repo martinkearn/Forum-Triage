@@ -13,7 +13,7 @@
             <li class="list-group-item">Answer Accepted:@question.is_answered, Total Answers:@question.answer_count</li>
             <li class="list-group-item">Upvotes:@question.up_vote_count, Downvotes:@question.down_vote_count, Favourited:@question.favorite_count</li>
             <li class="list-group-item">View Count: @question.view_count</li>
-            <li class="list-group-item">Creation Date: @question.creation_date (This is an epoch date, convert it <a href="http://www.epochconverter.com/">here</a>)</li>
+            <li class="list-group-item">Creation Date: @question.actual_creation_date</li>
         </ul>
 
     </div>

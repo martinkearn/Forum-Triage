@@ -8,6 +8,6 @@ namespace ForumTriage_Web.ViewModels.Home
 {
     public class QuestionsViewModel
     {
-        public IEnumerable<StackOverflowQuestion> Questions { get; set; }
+        public IEnumerable<StackOverflowQuestionWithDates> Questions { get; set; }
     }
 }
