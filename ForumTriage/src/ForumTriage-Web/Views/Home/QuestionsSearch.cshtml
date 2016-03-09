@@ -6,7 +6,7 @@
         @foreach (var user in Model.Users)
         {
             <label class="checkbox-inline">
-                <input type="checkbox" name="UserIds" id="@user.StackOverflowUserId" value="@user.StackOverflowUserId"> @user.Name
+                <input type="checkbox" name="UserIds" id="@user.StackOverflowUserId" value="@user.StackOverflowUserId"> @user.Name (@user.Organisation)
             </label>
         }
     </div>

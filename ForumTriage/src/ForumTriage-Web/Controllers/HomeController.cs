@@ -115,6 +115,7 @@ namespace ForumTriage_Web.Controllers
             var filteredQuestions = questions
                 .Where(o => o.is_answered != true)
                 .Where(o => o.locked_date == 0)
+                .Where(o => o.closed_date == 0)
                 .ToList();
             var vm = new QuestionsViewModel()
             {
