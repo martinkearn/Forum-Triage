@@ -14,6 +14,7 @@ using Microsoft.AspNet.Http.Internal;
 using Newtonsoft.Json.Linq;
 using ForumTriage_Web.Models;
 using Newtonsoft.Json;
+using ForumTriage_Web.Constants;
 
 namespace ForumTriage_Web.Controllers
 {
@@ -71,7 +72,7 @@ namespace ForumTriage_Web.Controllers
             using (var httpClient = new HttpClient(handler))
             {
                 //The advanced search api allow querying on both tags and user, but the user is an ID not display name: http://api.stackexchange.com/docs/advanced-search
-                var apiUrl = (string.Format("http://api.stackexchange.com/2.2/search/advanced?order=desc&sort=activity&accepted=False&tagged={0}&site=stackoverflow", tagsForQuery));
+                var apiUrl = (string.Format("http://api.stackexchange.com/2.2/search/advanced?pagesize={0}&order=desc&sort=activity&accepted=False&tagged={1}&site=stackoverflow", Constants.Constants._StackOverflowApiPageSize, tagsForQuery));
 
                 //setup HttpClient
                 httpClient.BaseAddress = new Uri(apiUrl);
@@ -103,6 +104,48 @@ namespace ForumTriage_Web.Controllers
             }
 
             return View();
+        }
+
+        public IActionResult SearchUsers()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Users(UsersSearchViewModel search)
+        {
+            //setup view model
+            var vm = new UsersViewModel();
+
+            //call SO api
+            HttpClientHandler handler = new HttpClientHandler();
+            handler.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+            using (var httpClient = new HttpClient(handler))
+            {
+                var apiUrl = (string.Format("http://api.stackexchange.com/2.2/users?pagesize={0}&order=desc&sort=reputation&inname={1}&site=stackoverflow", Constants.Constants._StackOverflowApiPageSize, search.InName));
+
+                //setup HttpClient
+                httpClient.BaseAddress = new Uri(apiUrl);
+                httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                //make request
+                var responseString = await httpClient.GetStringAsync(apiUrl);
+
+                //parse json string to object
+                List<StackOverflowUser> users = new List<StackOverflowUser>();
+                JObject response = JObject.Parse(responseString);
+                IList<JToken> results = response["items"].Children().ToList();
+                foreach (var result in results)
+                {
+                    StackOverflowUser user = JsonConvert.DeserializeObject<StackOverflowUser>(result.ToString());
+                    users.Add(user);
+                }
+
+                //populate view model
+                vm.Users = users;
+            }
+
+            return View(vm);
         }
 
         public IActionResult About()

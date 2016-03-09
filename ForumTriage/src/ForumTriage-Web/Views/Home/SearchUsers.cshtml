@@ -1,0 +1,12 @@
+﻿@model ForumTriage_Web.ViewModels.Home.UsersSearchViewModel
+<h2>Search for Users</h2>
+<form action="/Home/Users" method="post" autocomplete="on">
+    <div class="form-group">
+        <label for="InName">Display Name</label>
+        <input type="text" class="form-control" id="InName" name="InName" >
+        <p class="help-block">Supports partial matches. For example 'martin' would find any user with the string 'martin' in their display name.</p>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+
+
