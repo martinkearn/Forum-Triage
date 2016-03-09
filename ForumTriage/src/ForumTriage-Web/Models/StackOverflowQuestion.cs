@@ -16,7 +16,9 @@ namespace ForumTriage_Web.Models
         public int down_vote_count { get; set; }
         public int up_vote_count { get; set; }
         public int answer_count { get; set; }
+        public int closed_date { get; set; }
         public int score { get; set; }
+        public int locked_date { get; set; }
         public int last_activity_date { get; set; }
         public int creation_date { get; set; }
         public int last_edit_date { get; set; }

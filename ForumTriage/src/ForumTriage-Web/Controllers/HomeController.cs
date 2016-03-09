@@ -67,6 +67,9 @@ namespace ForumTriage_Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Questions(QuestionsSearchPostViewModel search)
         {
+            //prepare master question list
+            List<StackOverflowQuestion> questions = new List<StackOverflowQuestion>();
+
             //prepare query strings for api call
             var userIdsForQuery = string.Empty;
             if (search.UserIds != null)
@@ -78,26 +81,44 @@ namespace ForumTriage_Web.Controllers
                 userIdsForQuery = userIdsForQuery.TrimEnd(';');
             }
 
-            //construct api url
-            var apiUrl = (string.Format("users/{0}/questions/unanswered?pagesize={1}&order=desc&sort=activity&site=stackoverflow",
+            //get and parse unanswered results
+            var apiUrlUnanswered = (string.Format("users/{0}/questions/unanswered?pagesize={1}&order=desc&sort=activity&site=stackoverflow",
                 userIdsForQuery,
                 Constants.Constants.StackOverflowApiPageSize));
-
-            //get results
-            var results = await StackOverflowAPIService.CallApi(apiUrl);
-
-            //parse json string to object
-            List<StackOverflowQuestion> questions = new List<StackOverflowQuestion>();
-            foreach (var result in results)
+            foreach (var resultUnanswered in await StackOverflowAPIService.CallApi(apiUrlUnanswered))
             {
-                StackOverflowQuestion question = JsonConvert.DeserializeObject<StackOverflowQuestion>(result.ToString());
-                questions.Add(question);
+                StackOverflowQuestion question = JsonConvert.DeserializeObject<StackOverflowQuestion>(resultUnanswered.ToString());
+                if (questions.Where(o => o.question_id == question.question_id).Count() <= 0) questions.Add(question);
+            }
+
+            //get and parse no answer results
+            var apiUrlNoAnswers = (string.Format("users/{0}/questions/no-answers?pagesize={1}&order=desc&sort=activity&site=stackoverflow",
+                userIdsForQuery,
+                Constants.Constants.StackOverflowApiPageSize));
+            foreach (var resultNoAnswer in await StackOverflowAPIService.CallApi(apiUrlUnanswered))
+            {
+                StackOverflowQuestion question = JsonConvert.DeserializeObject<StackOverflowQuestion>(resultNoAnswer.ToString());
+                if (questions.Where(o => o.question_id == question.question_id).Count() <= 0) questions.Add(question);
+            }
+
+            //get and parse unaccepted results
+            var apiUrlUnaccepted = (string.Format("users/{0}/questions/unaccepted?pagesize={1}&order=desc&sort=activity&site=stackoverflow",
+                userIdsForQuery,
+                Constants.Constants.StackOverflowApiPageSize));
+            foreach (var resultUnaccepted in await StackOverflowAPIService.CallApi(apiUrlUnaccepted))
+            {
+                StackOverflowQuestion question = JsonConvert.DeserializeObject<StackOverflowQuestion>(resultUnaccepted.ToString());
+                if (questions.Where(o => o.question_id == question.question_id).Count() <= 0) questions.Add(question);
             }
 
             //populate view model
+            var filteredQuestions = questions
+                .Where(o => o.is_answered != true)
+                .Where(o => o.locked_date == 0)
+                .ToList();
             var vm = new QuestionsViewModel()
             {
-                Questions = questions
+                Questions = filteredQuestions
             };
 
             return View(vm);
