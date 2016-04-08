@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace ForumTriage_Web.ViewModels.Home
+namespace ForumTriage_Web.ViewModels.Questions
 {
     public class QuestionsSearchGetViewModel
     {

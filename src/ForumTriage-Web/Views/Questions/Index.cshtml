@@ -1,6 +1,6 @@
-﻿@model ForumTriage_Web.ViewModels.Home.QuestionsSearchGetViewModel
+﻿@model ForumTriage_Web.ViewModels.Questions.QuestionsSearchGetViewModel
 <h2>Search for Questions</h2>
-<form action="/Home/Questions" method="post" autocomplete="on">
+<form asp-action="Questions" method="post" autocomplete="on">
     <div class="form-group">
         <p>Questions from which users?</p>
         @foreach (var user in Model.Users)
