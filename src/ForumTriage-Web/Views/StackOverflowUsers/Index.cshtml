@@ -1,6 +1,6 @@
-﻿@model ForumTriage_Web.ViewModels.Home.UsersSearchViewModel
+﻿@model ForumTriage_Web.ViewModels.StackOverflowUsers.StackOverflowUsersSearchViewModel
 <h2>Search for Users</h2>
-<form action="/Home/Users" method="post" autocomplete="on">
+<form asp-action="StackOverflowUsers" method="post" autocomplete="on">
     <div class="form-group">
         <label for="InName">Display Name</label>
         <input type="text" class="form-control" id="InName" name="InName" >
