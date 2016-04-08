@@ -16,12 +16,20 @@ using ForumTriage_Web.Models;
 using Newtonsoft.Json;
 using ForumTriage_Web.Constants;
 using ForumTriage_Web.Services;
+using Microsoft.Data.Entity;
 
 namespace ForumTriage_Web.Controllers
 {
     public class HomeController : Controller
     {
-        public async Task<IActionResult> Index()
+        private ApplicationDbContext _context;
+
+        public HomeController(ApplicationDbContext context)
+        {
+            _context = context;
+        }
+
+        public IActionResult Index()
         {
 
             return View();
@@ -29,29 +37,10 @@ namespace ForumTriage_Web.Controllers
 
         //
         // GET: /Home/QuestionsSearch
-        public IActionResult QuestionsSearch()
+        public async Task<IActionResult> QuestionsSearch()
         {
             //read data files into an array of users
-            List<User> users = new List<User>();
-
-            using (StreamReader reader = System.IO.File.OpenText(@"..\data\Users.json"))
-            {
-                JObject o = (JObject)JToken.ReadFrom(new JsonTextReader(reader));
-
-                JArray usersArray = (JArray)o["users"];
-
-                foreach (var u in usersArray)
-                {
-                    var user = new User()
-                    {
-                        Name = (string)u["Name"],
-                        StackOverflowUserId = (string)u["StackOverflowUserId"],
-                        Organisation = (string)u["Organisation"]
-                    };
-
-                    users.Add(user);
-                }
-            }
+            var users = await _context.User.ToListAsync();
 
             //construct view model
             var viewModel = new QuestionsSearchGetViewModel()
