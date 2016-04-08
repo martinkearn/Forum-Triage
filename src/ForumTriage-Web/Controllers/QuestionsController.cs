@@ -23,8 +23,7 @@ namespace ForumTriage_Web.Controllers
 
         public async Task<IActionResult> Index()
         {
-
-            //read data files into an array of users
+            //get list of users
             var users = await _context.User.ToListAsync();
 
             //construct view model

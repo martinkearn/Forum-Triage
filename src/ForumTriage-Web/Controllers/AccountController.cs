@@ -105,6 +105,14 @@ namespace ForumTriage_Web.Controllers
             if (ModelState.IsValid)
             {
                 var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
+
+                //check the email is a @Microsoft.com email
+                if (!user.Email.ToLower().EndsWith("@microsoft.com"))
+                {
+                    _logger.LogInformation(3, "User attempted to register a non @Microsoft.com email address.");
+                    return RedirectToAction(nameof(HomeController.Index), "Home");
+                }
+
                 var result = await _userManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {

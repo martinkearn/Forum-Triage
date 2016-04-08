@@ -26,25 +26,24 @@
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-                    <a asp-controller="Home" asp-action="Index" class="navbar-brand">ForumTriage_Web</a>
+                    <a asp-controller="Home" asp-action="Index" class="navbar-brand">Forum Triage</a>
                 </div>
                 <div class="navbar-collapse collapse">
                     <ul class="nav navbar-nav">
-                        <li><a asp-controller="Home" asp-action="Index">Home</a></li>
                         <li><a asp-controller="Questions" asp-action="Index">Questions</a></li>
                         <li><a asp-controller="Users" asp-action="Index">Users</a></li>
-                        <li><a asp-controller="StackOverflowUsers" asp-action="Index">Stack Overflow Users</a></li>
+                        <li><a asp-controller="StackOverflowUsers" asp-action="Index">Stack Overflow User Lookup</a></li>
                     </ul>
-                    @await Html.PartialAsync("_LoginPartial")
+                    @*@await Html.PartialAsync("_LoginPartial")*@
                 </div>
             </div>
         </div>
         <div class="container body-content">
             @RenderBody()
-            <hr />
+            @*<hr />
             <footer>
                 <p>&copy; 2016 - ForumTriage_Web</p>
-            </footer>
+            </footer>*@
         </div>
 
         <environment names="Development">
